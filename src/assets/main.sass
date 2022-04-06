@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap')
+
+$gg_yellow: #ffd900
+
+*
+  margin: 0
+  box-sizing: border-box
+
+html
+  height: 100%
+
+body
+  overflow: hidden
+  display: flex
+  height: 100%
+
+%default-bg-img
+  background-size: auto 80%
+  background-repeat: no-repeat
+  background-position: center
+
+.home
+  display: flex
+  flex-wrap: wrap
+  padding: .35rem .5rem 0 .5rem
+  flex-grow: 1
+  overflow: auto
+  align-content: flex-start
+  heigtht: 50vh!important
+
+.button-effect
+  background-color: rgba(0, 0, 0, .05)
+  position: absolute
+  top:0
+  left: 50%
+  width: 0%
+  height: 100%
+  transition-duration: .3s
+
+.button-effect-active
+  width: 100%
+  left: 0
+  
+.list-item
+  position: relative
+  height: 20vw
+  display: flex
+  width: 100%
+  background-color: #fff
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, .05)
+  border-radius: .5rem
+  padding: .5rem 1rem
+  margin-bottom: .35rem
+  overflow: hidden
+
+  &__img
+    @extend %default-bg-img
+
+  &__rent-status
+    @extend %default-bg-img
+    background-size: 70% auto
+    background-image: url(images/notfree.png)
+
+  &__copy
+    align-items: center
+    display: flex
+
+  &__info
+    flex-wrap: wrap
+    align-content: center
+    display: flex
+
+    div:nth-of-type(1)
+      width: 100%
+      font:
+        weight: bold
+        size: 14px
+
+    div:nth-of-type(2)
+      width: 100%
+      margin-top: 5px
+      font:
+        weight: bold
+        size: 10px
+
+.el-input-number>span
+  height: calc(100% - 2px)
+  display: flex
+  align-items: center
+  justify-content: center
+
+.el-message
+  width: 90vw!important
+  min-width: 10vw!important
+  font-family: Inter
+
+  
+.el-input-group
+  border-radius: 1rem
+  overflow: hidden
+
+  input
+    border-radius: 1rem 
+
+.k-progress-outer
+  padding: 0!important  
+  
+.k-progress
+  margin-right: 0!important
+
+.k-progress-outer-line
+  border-radius: 5px!important
+
+  
+.el-loading-spinner
+  .path 
+    stroke-width: 4!important
+    stroke: #000000!important
