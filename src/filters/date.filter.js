@@ -1,6 +1,8 @@
 export default function dateFilter(value, format='datetime') {
   const options = {}
 
+  if(!value) return ''
+
   if(format.includes('date')) {
     options.day = '2-digit'
     options.month = 'short'
