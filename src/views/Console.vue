@@ -11,7 +11,12 @@
     >
       <!-- -----Name----- -->
       <el-form-item>
-        <h1>{{consoleInfo.name}}</h1>
+        <div class="console-header">
+          <div></div>
+          <h1>{{consoleInfo.name}}</h1>
+          <el-button v-if="!consoleInfo.hidden" type="success" plain icon="el-icon-view" circle @click="changeHidden"></el-button>
+          <el-button v-else type="info" plain icon="el-icon-lock" circle @click="changeHidden"></el-button>
+        </div>
       </el-form-item>
   
       <!-- -----Account----- -->
@@ -28,7 +33,9 @@
       <el-form-item v-if="!free">
         <div class="info">
           <div>Клиент:</div>
-          <div>{{consoleInfo.client}}</div>
+          <el-button v-if="phoneNumber" style="white-space: normal; width: 100%;" @click="callToClient()" type="default">{{consoleInfo.client}}<i style="padding-left: .5rem;" class="el-icon-phone"></i></el-button>
+          <div v-else>{{consoleInfo.client}}</div>
+          <!-- <div><a :href="'tel:'+phoneNumber || '#'">{{consoleInfo.client}}</a></div> -->
         </div>
       </el-form-item>
 
@@ -62,6 +69,15 @@
           ></el-input>
         </div>
       </el-form-item>
+
+      <!-- -----dayOfRent----- -->
+      <el-form-item v-if="!free">
+        <div class="info">
+          <div>Арендована:</div>
+          <div>{{consoleInfo.dayOfRent | date}}</div>
+        </div>
+      </el-form-item>
+
 
       <!-- -----Deposit----- -->
       <el-form-item>
@@ -199,6 +215,9 @@
           icon="el-icon-bottom"
         >Забрать</el-button>
       </el-form-item>
+      
+      <el-form-item v-if="!free && phoneNumber" style="width: 50%;">
+      </el-form-item>
 
     </el-form>
 
@@ -237,6 +256,38 @@ export default {
       if(this.consoleInfo.free === 'true')
         return true
       return false
+    },
+
+    phoneNumber() {
+      const clientName = this.consoleInfo.client
+
+      let phone = ''
+      let digitCount = 0
+
+      if (~clientName.indexOf('+')) {
+        phone += '8'
+        for(let i = clientName.indexOf('+')+2; i < clientName.length; i++) {
+          if (+clientName[i] || clientName[i] === '0') {
+            phone += clientName[i]
+            digitCount++
+          }
+          if(digitCount > 10) break
+        }
+      } else if(~clientName.indexOf('89')) {
+        for(let i = clientName.indexOf('89'); i < clientName.length; i++) {
+          if (+clientName[i] || clientName[i] === '0') {
+            phone += clientName[i]
+            digitCount++
+          }
+          if(digitCount>11) {
+            phone = phone.slice(1)
+          }
+        }
+      }
+
+      if (phone.length !== 11) return ''
+
+      return phone
     }
   },
   mounted() {
@@ -250,6 +301,25 @@ export default {
   },
 
   methods: {
+
+    async changeHidden() {
+      this.consoleInfo.hidden = !this.consoleInfo.hidden
+
+      try {
+        const hiddenData = {
+          hidden: this.consoleInfo.hidden,
+          id: this.consoleInfo.id
+        }
+        await this.$store.dispatch('editConsoleHidden', hiddenData)
+      } catch(e) {
+        console.log(e)
+      }
+    },
+
+    callToClient() {
+      window.location.href="tel:"+this.phoneNumber
+    },
+
     changeRentMoney(currentValue) {
       this.rentMoney = currentValue * 500 + this.consoleInfo.duty
     },
@@ -273,8 +343,10 @@ export default {
 
       let rentClient = this.consoleInfo.client
       let rentDate = this.date
+      let dayOfRent = this.consoleInfo.dayOfRent || ''
 
       if(this.free) {
+        dayOfRent = new Date(Date.now())
         this.newClient = this.newClient.replace(new RegExp('\\n','g'),' ');
         rentClient = this.newClient.length
           ? this.newClient
@@ -316,7 +388,8 @@ export default {
         free: 'false',
         img: this.consoleInfo.img,
         name: this.consoleInfo.name,
-        id: this.consoleInfo.id
+        id: this.consoleInfo.id,
+        dayOfRent
       }      
 
       const money = this.consoleInfo.duty + this.money[wallet].money    
@@ -380,7 +453,8 @@ export default {
         free: 'true',
         img: this.consoleInfo.img,
         name: this.consoleInfo.name,
-        id: this.consoleInfo.id
+        id: this.consoleInfo.id,
+        dayOfRent: ''
       }
 
       try {
@@ -411,6 +485,10 @@ export default {
   overflow: auto
   align-content: flex-start
   background-color: #fff
+
+.console-header
+  display: flex
+  justify-content: space-between
 
 .el-form
   width: 100%

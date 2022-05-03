@@ -49,13 +49,18 @@ export default new Vuex.Store({
       state.error = error
     },
 
-    editFleet(state, {id, client, date, deposit, duty, free}) {
+    editFleet(state, {id, client, date, deposit, duty, free, dayOfRent}) {
       state.fleet.find(i => i.id === id).client = client
       state.fleet.find(i => i.id === id).date = date
       state.fleet.find(i => i.id === id).deposit = deposit
       state.fleet.find(i => i.id === id).duty = duty
       state.fleet.find(i => i.id === id).free = free
+      state.fleet.find(i => i.id === id).dayOfRent = dayOfRent
       state.fleet.find(i => i.id === id).remaning = new Date(date) - new Date(Date.now()) || -99999999999999
+    },
+
+    editHidden(state, {id, hidden}) {
+      state.fleet.find(i => i.id === id).hidden = hidden
     },
 
     editMoney(state, {id, money}) {
@@ -145,13 +150,24 @@ export default new Vuex.Store({
       commit('setAllgames', allGames)
     },
     
-    async editConsoleInfo({commit, dispatch}, {id, client, date, deposit, duty, free}) {
+    async editConsoleInfo({commit, dispatch}, {id, client, date, deposit, duty, free, dayOfRent}) {
       try {
-        await firebase.database().ref(`/fleet`).child(id).update({client, date, deposit, duty, free})
+        await firebase.database().ref(`/fleet`).child(id).update({client, date, deposit, duty, free, dayOfRent})
 
-        commit('editFleet', {id, client, date, deposit, duty, free})
+        commit('editFleet', {id, client, date, deposit, duty, free, dayOfRent})
 
         dispatch('sortFleet')
+      } catch(e) {
+        commit('setError', e)
+        throw e
+      }
+    },
+    
+    async editConsoleHidden({commit}, {id, hidden}) {
+      try {
+        await firebase.database().ref(`/fleet`).child(id).update({hidden})
+
+        commit('editHidden', {id, hidden})
       } catch(e) {
         commit('setError', e)
         throw e

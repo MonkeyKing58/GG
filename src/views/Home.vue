@@ -1,8 +1,12 @@
 <template>
   <div class="home">
+
+    <div class="console-hider">
+      <i class="el-icon-caret-top"></i>Активные консоли ({{visibleFleet.length}})
+    </div>
     
     <div     
-      v-for="item in fleet"
+      v-for="item in visibleFleet"
       :key="item.name"
       class="list-item" el.row>
 
@@ -33,6 +37,46 @@
 
     </div>
 
+    <div class="console-hider" @click="showHidden()">
+      <i v-if="hiddenConsoles" class="el-icon-caret-bottom"></i>
+      <i v-else class="el-icon-caret-top"></i>
+      Скрытые консоли ({{hiddenFleet.length}})
+    </div>
+
+    <div class="hidden-list-contaner" :style="styleHiddenConsoles" data-hider>
+      <div     
+        v-for="item in hiddenFleet"
+        :key="item.name"
+        class="list-item" el.row>
+
+          <div :name="item.id" class="button-effect"></div>
+
+          <el-col
+            :span="5"
+            :class="item.img"
+            class="list-item__img"
+          ></el-col>
+
+          <el-col :span="12" class="list-item__info">
+            <div class="list-item__info-wrapper" @click="goToConsolePanel(item.id)">
+              <div>{{item.name}}</div>
+              <div v-if="!(item.free === 'true')">{{remaningTime(item.remaning)}}</div>
+            </div>
+          </el-col>
+
+          <el-col
+            :span="3"
+            class="list-item__rent-status"
+            :class="{ free:item.free === 'true'}"
+          ></el-col>
+
+          <el-col :span="3" :offset="1" class="list-item__copy">
+            <el-button type="default" icon="el-icon-copy-document" @click="copyGameList(item.id)" circle></el-button>
+          </el-col>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -46,12 +90,42 @@ export default {
     },
   data:() => {
     return {
+      hiddenConsoles: true
     }
   },
   computed: {    
     ...mapGetters(['fleetById', 'fleet']),
+
+    visibleFleet() {
+      return this.fleet.filter(i => !i.hidden)
+    },
+
+    hiddenFleet() {
+      return this.fleet.filter(i => i.hidden)
+    },
+
+    styleHiddenConsoles() {
+      if(this.hiddenConsoles)
+        return { maxHeight: '0' }
+      
+      const itemsCount = this.hiddenFleet.length
+      return {
+        maxHeight: `calc(${itemsCount*20}vw + ${itemsCount*.5}rem)`
+      }
+    }
   },
   methods: {
+    showHidden() {
+      this.hiddenConsoles = !this.hiddenConsoles
+      
+      if(!this.hiddenConsoles) {
+        const timer = setInterval(() => {
+            document.querySelector('.home').scrollTo(0, 10000)
+          }, 1)
+        setTimeout(() => { clearInterval(timer) }, 500) 
+      }
+    },
+
     remaningTime(time) {
 
       const prefix = time > 0 ? 'Осталось: ' : 'Просрочено: '
@@ -98,9 +172,7 @@ export default {
       const item = document.querySelector('[name='+id+']') 
       item.classList.add('button-effect-active')
       
-      setTimeout(() => {      
-        this.$router.push('/console/' + id)        
-      }, 250);
+      setTimeout(() => { this.$router.push('/console/' + id) }, 250);
     }
   },
   components: {
@@ -109,6 +181,26 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+
+.hidden-list-contaner
+  display: flex
+  flex-wrap: wrap
+  overflow: hidden
+  transition-duration: .5s
+
+.hidden-list-contaner-active
+  max-height: 400vw
+
+.console-hider
+  display: flex
+  color: #aaa
+  width: 100%
+  margin: .25rem 0 .5rem 0
+  font-size: .7rem
+  font-weight: bold
+
+  i
+    margin-right: 0.5rem
 
 .list-item__info-wrapper
   display: flex
